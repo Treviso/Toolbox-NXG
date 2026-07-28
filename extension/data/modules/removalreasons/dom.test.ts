@@ -713,6 +713,25 @@ describe('createRemovalReasonsHandlers', () => {
 		expect(showRemovalReasonsOverlay,).not.toHaveBeenCalled()
 	})
 
+	it('does not swallow clicks on Toolbox\'s own React buttons whose text contains "remove"', async () => {
+		// The mass-moderation toolbar renders a "remove selected" button inside a React light
+		// host; it drives its own onClick. The remove-button text fallback must leave it alone so
+		// that handler can run, rather than preventDefault-ing the click out from under it.
+		document.body.innerHTML = `
+            <div class="toolbox-react-light-host">
+                <button type="button">remove selected</button>
+            </div>
+        `
+		const btn = document.querySelector('button',)!
+		const event = makeClick(btn,)
+
+		await createRemovalReasonsHandlers(handlerSettings,).handleClick(event,)
+
+		expect(event.preventDefault,).not.toHaveBeenCalled()
+		expect(event.stopImmediatePropagation,).not.toHaveBeenCalled()
+		expect(showRemovalReasonsOverlay,).not.toHaveBeenCalled()
+	})
+
 	it('silently removes from shift-clicked Toolbox remove buttons', async () => {
 		document.body.innerHTML = `
             <div class="thing link" data-fullname="t3_post" data-subreddit="testsub">
